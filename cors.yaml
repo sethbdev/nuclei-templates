@@ -1,21 +1,24 @@
 id: cors-misconfig
+
 info:
   name: CORS Misconfiguration
   author: coffin
   severity: high
   tags: cors,generic,misconfig
 
-http:
+requests:
   - raw:
       - |
-        GET  HTTP/1.1
+        GET / HTTP/1.1
         Host: {{Hostname}}
         Origin: {{cors_origin}}
 
     payloads:
       cors_origin:
-        - "https://{{tolower(rand_base(5))}}.{{RDN}}" # Find domain in RDN with Misconfiguration
+        - "https://{{tolower(rand_base(5))}}.{{RDN}}"  # Random subdomain under RDN
+
     stop-at-first-match: true
+
     matchers:
       - type: dsl
         name: arbitrary-origin
