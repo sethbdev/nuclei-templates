@@ -4,9 +4,16 @@ info:
   name: Common API Endpoints
   author: panch0r3d
   severity: info
+  description: |
+    Probes common API endpoints across various versions and routes to detect accessible or misconfigured APIs.
+  tags: api,discovery,enumeration
+  metadata:
+    max-request: 1
+    verified: true
 
-requests:
-  - method: GET
+http:
+  - id: common-api-check
+    method: GET
     path:
       - "{{BaseURL}}/server/api/admin"
       - "{{BaseURL}}/api/v1"
@@ -58,15 +65,11 @@ requests:
       - "{{BaseURL}}/rest/api/orders"
       - "{{BaseURL}}/rest/api/webhooks"
       - "{{BaseURL}}/docs"
-    matchers-condition: and
+
     matchers:
-      - type: status
-        status:
-          - 200
-          - 405
-          - 500
-          - 403
-      - type: word
-        words:
-          - "Content-Type: application/json"
-        part: header
+      - type: dsl
+        name: potential-api-response
+        dsl:
+          - "status_code in [200, 403, 405, 500]"
+          - "contains(header, 'Content-Type: application/json')"
+
