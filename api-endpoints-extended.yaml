@@ -1,0 +1,117 @@
+id: api-endpoints-extended
+
+info:
+  name: Common API Endpoint Discovery & Fuzz
+  author: panch0r3d, updated
+  severity: info
+  description: |
+    Probes and extracts common REST API endpoints and checks for basic access or unprotected HTTP methods.
+    Includes GET + POST fuzzing with simple extraction and match logic.
+  tags: api,discovery,enumeration,fuzz
+  metadata:
+    verified: true
+    max-request: 2
+
+variables:
+  endpoints:
+    - /server/api/admin
+    - /api/v1
+    - /api/v2
+    - /api/v3
+    - /api/v4
+    - /api/v5
+    - /api/v1/users
+    - /api/v2/users
+    - /api/v3/users
+    - /api/v4/users
+    - /api/v5/users
+    - /api/v1/orders
+    - /api/v2/orders
+    - /api/v3/orders
+    - /api/v4/orders
+    - /api/v5/orders
+    - /api/v1/config
+    - /api/v2/config
+    - /api/v3/config
+    - /api/v4/config
+    - /api/v5/config
+    - /api/v1/webhooks
+    - /api/v2/webhooks
+    - /api/v3/webhooks
+    - /api/v4/webhooks
+    - /api/v5/webhooks
+    - /api/v1/health
+    - /api/v2/health
+    - /api/v3/health
+    - /api/v4/health
+    - /api/v5/health
+    - /api/v1/accounts
+    - /api/v2/accounts
+    - /api/v3/accounts
+    - /api/v4/accounts
+    - /api/v5/accounts
+    - /api/health
+    - /api/config
+    - /api/users
+    - /api/orders
+    - /api/webhooks
+    - /api/accounts
+    - /api/admin
+    - /api/account/metadata/
+    - /rest/api/health
+    - /rest/api/config
+    - /rest/api/users
+    - /rest/api/orders
+    - /rest/api/webhooks
+    - /docs
+
+flow: |
+  for (let path of template.endpoints) {
+    set("endpoint", path)
+    http("get-discover")
+    http("post-discover")
+  }
+
+http:
+  - id: get-discover
+    method: GET
+    path:
+      - "{{BaseURL}}{{endpoint}}"
+
+    matchers:
+      - type: dsl
+        name: get-response
+        dsl:
+          - status_code in [200, 403, 405, 500]
+          - contains(header, "Content-Type: application/json")
+
+    extractors:
+      - type: regex
+        name: json-keys
+        part: body
+        group: 1
+        regex:
+          - '"([a-zA-Z0-9_]+)"\s*:'
+
+  - id: post-discover
+    method: POST
+    path:
+      - "{{BaseURL}}{{endpoint}}"
+    body: "{}"
+    headers:
+      Content-Type: application/json
+
+    matchers:
+      - type: dsl
+        name: post-access
+        dsl:
+          - status_code in [200, 201, 202, 400, 403, 500]
+          - contains(header, "application/json") || contains(header, "text/plain")
+
+    extractors:
+      - type: regex
+        name: post-json-keys
+        part: body
+        group: 1
+        regex:
+          - '"([a-zA-Z0-9_]+)"\s*:'
