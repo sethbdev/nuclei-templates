@@ -1,0 +1,42 @@
+id: aws-key-disclosure-extractor
+
+info:
+  name: AWS Access/Secret Key Auto-Extractor
+  author: reewardius
+  severity: high
+  description: |
+    Extracts AWS access and secret keys from response body if present.
+  tags: disclosure,aws,leak,extraction,amazon
+  metadata:
+    verified: true
+    max-request: 1
+
+http:
+  - id: aws-key-extractor
+    method: GET
+    path:
+      - '{{BaseURL}}'
+
+    extractors:
+      - type: regex
+        name: access_key_id
+        part: body
+        group: 0
+        regex:
+          - 'AKIA[0-9A-Z]{16}'
+          - 'ASIA[0-9A-Z]{16}'
+
+      - type: regex
+        name: secret_access_key
+        part: body
+        group: 0
+        regex:
+          - '(?i)(?<=aws_secret_access_key[=|:|"])[0-9a-zA-Z/+]{40}'
+          - '(?i)(?<=secretaccesskey[=|:|"])[0-9a-zA-Z/+]{40}'
+
+      - type: regex
+        name: session_token
+        part: body
+        group: 0
+        regex:
+          - '(?i)(?<=aws_session_token[=|:|"])[A-Za-z0-9/+=]{16,}'
