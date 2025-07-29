@@ -1,0 +1,36 @@
+id: aws-key-js-leak-passive
+
+info:
+  name: AWS Key Leak in JavaScript Files (Passive)
+  author: reewardius
+  severity: high
+  description: |
+    Passively scans JS files for embedded AWS credentials in URLs or scripts.
+  tags: passive,aws,exposure,js,amazon,disclosure
+  metadata:
+    verified: true
+    max-request: 1
+
+javascript:
+  - code: |
+      const matches = [];
+      const awsKeyPattern = /(A3T[A-Z0-9]{16})|(AKIA[0-9A-Z]{16})|(ASIA[0-9A-Z]{16})/g;
+      const secretPattern = /(?:aws_secret_access_key|secretAccessKey)[=:]['"]?([A-Za-z0-9\/+=]{40})/gi;
+      const sessionPattern = /aws_session_token['"]?[=: ]+['"]?([A-Za-z0-9\/+=]{16,})/gi;
+
+      let bodyText = response.body || '';
+      let m;
+
+      while ((m = awsKeyPattern.exec(bodyText)) !== null) {
+        matches.push({ type: "accessKeyId", match: m[0] });
+      }
+
+      while ((m = secretPattern.exec(bodyText)) !== null) {
+        matches.push({ type: "secretAccessKey", match: m[1] });
+      }
+
+      while ((m = sessionPattern.exec(bodyText)) !== null) {
+        matches.push({ type: "sessionToken", match: m[1] });
+      }
+
+      matches;
