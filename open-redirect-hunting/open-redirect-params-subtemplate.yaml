@@ -1,0 +1,35 @@
+id: open-redirect-params-subtemplate
+
+info:
+  name: Open Redirect - Parameter Wordlist
+  author: sethbdev
+  severity: medium
+
+variables:
+  redirect: "https://bing.com"
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{param}}{{redirect}}"
+    payloads:
+      param: helpers/redirect-params.txt
+    payloads:
+      param: |
+        {{param}}
+    fuzzing:
+      type: clusterbomb
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "Location: {{redirect}}"
+      - type: status
+        status:
+          - 301
+          - 302
+          - 303
+          - 307
+          - 308
