@@ -1,0 +1,22 @@
+id: open-redirect-paths-subtemplate
+
+info:
+  name: Open Redirect - Path Wordlist
+  author: sethbdev
+  severity: medium
+
+variables:
+  redirect: "https://bing.com"
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{path}}?url={{redirect}}"
+    payloads:
+      path: helpers/redirect-paths.txt
+
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "Location: {{redirect}}"
