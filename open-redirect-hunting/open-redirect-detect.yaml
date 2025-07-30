@@ -1,0 +1,42 @@
+id: open-redirect-detect
+
+info:
+  name: Open Redirect - Common Payloads
+  author: coffinxp, updated by sethbdev
+  severity: medium
+  description: |
+    Detects common GET-based open redirect vulnerabilities using common endpoint & parameter combos.
+  tags: redirect, openredirect, ssrf, web, fuzz
+  metadata:
+    framework: generic
+    max-request: 1
+
+variables:
+  redirect: "https://bing.com"
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/{{redirect}}"
+      - "{{BaseURL}}/?url={{redirect}}"
+      - "{{BaseURL}}/redirect?url={{redirect}}"
+      - "{{BaseURL}}/login?next={{redirect}}"
+      - "{{BaseURL}}/out?to={{redirect}}"
+      - "{{BaseURL}}/redirect.php?url={{redirect}}"
+      - "{{BaseURL}}/goto.asp?Url={{redirect}}"
+
+    redirects: false
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "Location: {{redirect}}"
+      - type: status
+        status:
+          - 301
+          - 302
+          - 303
+          - 307
+          - 308
