@@ -1,0 +1,30 @@
+id: js-linkfinder-headless
+
+info:
+  name: JS Link Discovery (Headless Extraction)
+  author: bughunter
+  severity: info
+  description: Uses headless mode to extract all JS URLs from loaded DOM.
+  tags: js, headless, passive, browser
+
+headless:
+  - steps:
+      - action: navigate
+        url: "{{BaseURL}}"
+
+      - action: waitload
+
+      - action: extract
+        name: script-urls
+        type: regex
+        part: body
+        regex:
+          - "(?:src|href)=['\"]([^\"']+\\.js)['\"]"
+
+      - action: extract
+        name: dom-links
+        type: regex
+        part: body
+        regex:
+          - "(?i)https?:\/\/[a-z0-9\-_\.]+\/[a-z0-9\/\-_]{2,}\\.(js|json|php|aspx|jsp|cgi|html)"
+          - "(?i)[\"']([a-z0-9\/_\-]{1,100}\\.(php|jsp|asp|cgi|do))[\"']"
