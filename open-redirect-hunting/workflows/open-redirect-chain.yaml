@@ -1,0 +1,24 @@
+id: open-redirect-chain
+
+info:
+  name: Open Redirect Workflow with Chaining
+  author: chatgpt
+  description: |
+    Workflow to detect open redirects and chain to SSRF/CSP/credential phishing followups.
+  tags: redirect, chain, ssrf, exploit
+
+flow:
+  - template: open-redirect-hunting/open-redirect-detect.yaml
+    subtemplates:
+      - open-redirect-hunting/open-redirect-paths-subtemplate.yaml
+      - open-redirect-hunting/open-redirect-params-subtemplate.yaml
+    if: response.status_code >= 300 && response.status_code <= 308
+
+  - template: graphql-hunting/graphql-introspection.yaml
+    if: response.body contains "graphql"
+
+  - template: generic/ssrf-detect.yaml
+    if: response.headers contains "Location" && response.headers contains "http"
+
+  - template: csp/csp-bypass-check.yaml
+    if: response.headers contains "Content-Security-Policy"
