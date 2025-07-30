@@ -1,0 +1,37 @@
+id: js-hash-fingerprint
+
+info:
+  name: JavaScript Hashing and Fingerprinting
+  author: bughunter
+  severity: info
+  description: Downloads discovered JavaScript files and hashes them for diffing or fingerprinting.
+  tags: js, passive, hash
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    extractors:
+      - type: regex
+        name: js-urls
+        part: body
+        regex:
+          - "(?:src|href)=['\"](\/[^\"'>]{1,512}\\.js)['\"]"
+
+  - method: GET
+    path:
+      - "{{BaseURL}}{{js-urls}}"
+
+    matchers:
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: dsl
+        name: js-hash
+        dsl:
+          - "md5(body)"
+          - "sha1(body)"
+          - "sha256(body)"
