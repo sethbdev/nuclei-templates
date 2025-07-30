@@ -1,0 +1,9 @@
+/redirect
+/login
+/logout
+/out
+/go
+/goto.asp
+/redirect.php
+/open-external-link
+/visit
