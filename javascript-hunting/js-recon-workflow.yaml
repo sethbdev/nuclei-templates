@@ -7,8 +7,11 @@ info:
   note: custom-tools/gf-linkfinder.yaml should be a local wrapper calling your gf or linkfinder.py results via custom script or HTTP bin.
 
 workflows:
-  - template: js-file-discovery
-  - template: js-file-discovery-accessible
-  - template: js-hash-fingerprint
-  - template: js-secrets-detection
+  - template: js-file-discovery.yaml
+  - template: js-file-discovery-accessible.yaml
+  - template: js-hash-fingerprint.yaml
+  - template: js-secrets-detection.yaml
+  - template: js-linkfinder-gf.yaml
+  - template: js-linkfinder-headless.yaml
   - template: custom-tools/gf-linkfinder.yaml
+  
