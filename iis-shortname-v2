@@ -1,0 +1,59 @@
+id: iis-shortname
+
+info:
+  name: IIS Shortname Enumeration
+  author: coffin
+  severity: low
+  description: |
+    IIS shortname enumeration vulnerability using tilde (~) notation.
+    Exploits legacy behavior in certain IIS configurations using outdated .NET frameworks.
+  reference:
+    - https://github.com/irsdl/IIS-ShortName-Scanner
+    - https://github.com/lijiejie/IIS_shortname_Scanner
+    - https://www.exploit-db.com/exploits/19525
+  tags: iis, misconfig, shortname, windows
+
+variables:
+  randstring: "{{to_lower(rand_base(8))}}"
+
+requests:
+  - raw:
+      - |
+        GET /{{randstring}}*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+      - |
+        GET /*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+      - |
+        OPTIONS /{{randstring}}*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+      - |
+        OPTIONS /*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+      - |
+        DEBUG /{{randstring}}*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+      - |
+        DEBUG /*~1*/a.aspx HTTP/1.1
+        Host: {{Hostname}}
+        Origin: {{BaseURL}}
+        Accept: */*
+    req-condition: true
+    matchers:
+      - type: dsl
+        name: iis-shortname-match
+        dsl:
+          - "status_code_1 != 404 && status_code_2 == 404"
+          - "status_code_3 != 404 && status_code_4 == 404"
+          - "status_code_5 != 404 && status_code_6 == 404"
+        condition: or
