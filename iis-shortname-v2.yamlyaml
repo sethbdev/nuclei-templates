@@ -2,7 +2,7 @@ id: iis-shortname
 
 info:
   name: IIS Shortname Enumeration
-  author: coffin
+  author: coffin updated
   severity: low
   description: |
     IIS shortname enumeration vulnerability using tilde (~) notation.
