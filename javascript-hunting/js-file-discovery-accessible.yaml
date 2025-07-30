@@ -1,0 +1,31 @@
+id: js-file-discovery-accessible
+
+info:
+  name: JS File Discovery (No CDN) + Accessibility Check
+  author: bughunter
+  severity: info
+  description: Filters out CDN JavaScript URLs and checks if accessible.
+  tags: js, passive, accessible
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    extractors:
+      - type: regex
+        name: local-js
+        part: body
+        regex:
+          - "(?:src|href)=['\"](\/[^\"'>]{1,512}\\.js)['\"]"
+          - "(?:src|href)=['\"]((?!https?:\/\/(?:cdn|ajax|cloudflare|google)).+?\\.js)['\"]"
+        internal: true
+
+  - method: GET
+    path:
+      - "{{BaseURL}}{{local-js}}"
+
+    matchers:
+      - type: status
+        status:
+          - 200
