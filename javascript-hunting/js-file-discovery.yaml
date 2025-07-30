@@ -1,0 +1,21 @@
+id: js-file-discovery
+
+info:
+  name: JavaScript File Discovery
+  author: bughunter
+  severity: info
+  description: Enumerates `.js` files up to 9 directory levels deep.
+  tags: js, discovery, passive
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    extractors:
+      - type: regex
+        name: js-files
+        part: body
+        regex:
+          - "(?:src|href)=['\"](\/[^\"'>]{1,512}\\.js)['\"]"
+          - "(?:src|href)=['\"]((?:https?:)?\/\/[^\"'>]{1,512}\\.js)['\"]"
