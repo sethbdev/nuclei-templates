@@ -1,0 +1,34 @@
+id: js-linkfinder-gf
+
+info:
+  name: JavaScript Endpoint & Parameter Discovery (gf-style)
+  author: bughunter
+  severity: info
+  description: |
+    Scans JavaScript files for patterns that resemble endpoints or sensitive parameters
+    using custom regex inspired by `gf` patterns.
+  tags: js, passive, linkfinder, gf
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    extractors:
+      - type: regex
+        name: js-paths
+        part: body
+        regex:
+          - "(?:src|href)=['\"](\/[^\"'>]{1,512}\\.js)['\"]"
+
+  - method: GET
+    path:
+      - "{{BaseURL}}{{js-paths}}"
+
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "(?i)(\/api\/[a-z0-9\-_\/]*)"
+          - "(?i)([a-z0-9_]{1,30}=https?:\/\/[^&\"'\\s]+)"
+          - "(?i)[a-z0-9]{0,15}\/?(auth|login|signup|reset|admin|config|token|debug)[^\"'\\s]+"
