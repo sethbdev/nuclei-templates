@@ -1,0 +1,28 @@
+id: js-hunting-workflow
+info:
+  name: JavaScript Hunting Full Suite Workflow
+  author: bughunter
+  severity: info
+  description: |
+    Workflow chaining templates to perform
+    - JS files enumeration (depth 0-9)
+    - CDN exclusion
+    - Hashing JS files
+    - Status 200 checks
+    - Secret detection
+    - GF-style pattern matching
+    - Headless JS URL extraction
+  tags: js, workflow, hunting, secrets, hashing
+
+workflow:
+  - template: js-enumeration-depth0-9.yaml
+  - template: js-cdn-filtering.yaml
+  - template: js-hash-files.yaml
+  - template: js-status200-check.yaml
+  - template: js-secret-scanning.yaml
+  - template: js-linkfinder-gf.yaml
+  - template: js-linkfinder-headless.yaml
+
+output:
+  format: json
+  file: js-hunting-results.json
