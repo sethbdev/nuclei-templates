@@ -1,0 +1,14 @@
+id: js-recon-workflow
+
+info:
+  name: JavaScript Recon Workflow
+  author: bughunter
+  description: Chains JS discovery, filtering, accessibility, secrets scanning and optional GF/linkfinding.
+  note: custom-tools/gf-linkfinder.yaml should be a local wrapper calling your gf or linkfinder.py results via custom script or HTTP bin.
+
+workflows:
+  - template: js-file-discovery
+  - template: js-file-discovery-accessible
+  - template: js-hash-fingerprint
+  - template: js-secrets-detection
+  - template: custom-tools/gf-linkfinder.yaml
