@@ -1,0 +1,46 @@
+id: nextjs-prefetch-fuzz
+
+info:
+  name: Next.js Prefetch Header Fuzzing
+  author: sethbdev
+  severity: medium
+  description: |
+    Fuzzes common prefetch-related headers and parameter names to discover cache/middleware misconfigurations.
+  tags: nextjs, fuzzing, prefetch, middleware, bypass
+
+variables:
+  rand: "{{rand_base(6)}}"
+
+payloads:
+  fuzz_headers:
+    - X-Middleware-Prefetch: 1
+    - X-Prefetch: true
+    - X-NextJS-Cache: bypass
+    - Priority: u=1
+    - Priority: h=5
+    - X-Fake-Bypass: 1
+
+attack: pitchfork
+
+http:
+  - raw:
+      - |
+        GET /?{{rand}}=test HTTP/1.1
+        Host: {{Hostname}}
+        {{fuzz_headers}}
+        User-Agent: Mozilla/5.0
+        Accept: */*
+
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-Middleware-Skip: 1"
+          - "X-NextJS-Cache: bypass"
+
+    extractors:
+      - type: regex
+        name: skip
+        part: header
+        regex:
+          - "X-Middleware-Skip:\\s?1"
